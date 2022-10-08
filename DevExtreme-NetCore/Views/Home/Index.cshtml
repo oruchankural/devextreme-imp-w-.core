@@ -1,0 +1,200 @@
+﻿@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Home Page";
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/17.2.4/css/dx.common.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/17.2.4/css/dx.light.css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdn3.devexpress.com/jslib/17.2.4/js/dx.all.js"></script>
+<div id="gridContainer" class="container">
+
+</div>
+<script>
+    function ShowOrHide(relevalentDiv) {
+        var r_arrow = document.getElementById(`${event.srcElement.id}`);
+        var r_div = document.getElementById(`${relevalentDiv}`);
+        if (r_div.style.display === "none") {
+            r_arrow.className = "bi bi-arrow-up btn btn-outline-primary";
+            r_div.style.display = "block";
+        }
+        else {
+            r_arrow.className = "bi bi-arrow-down btn btn-outline-danger";
+            r_div.style.display = "none";
+        }
+    }
+</script>
+
+<br />
+<h1>İlişkili tablolar üzerinden güncelleme nasıl yapılır ?</h1>
+<h3><button class="bi bi-arrow-down  btn btn-outline-danger" id="workWithBCrypt_Arrow" onclick="ShowOrHide('workWithBCrypt_Div');"></button> Doküman </h3>
+<div class="pre-scrollable" id="workWithBCrypt_Div" style="display:none;">
+
+    <img src="~/Documentation.png" style="width:100%;"/>
+    <hr />
+</div>
+
+
+<script type="text/javascript">
+    const countries = [
+        {
+            ID: 1,
+            Name: 'Türkiye'
+        },
+        {
+            ID: 2,
+            Name: 'Amerika'
+        }
+    ];
+    const cities = [
+        {
+            ID: 1,
+            Name: 'Ankara',
+            CountryId: 1
+        },
+        {
+            ID: 2,
+            Name: 'İstanbul',
+            CountryId: 1
+        },
+        {
+            ID: 3,
+            Name: 'NewYork',
+            CountryId: 2
+
+        },
+        {
+            ID: 4,
+            Name: 'San Diego',
+            CountryId: 2
+
+        }
+
+    ];
+    const states = [
+        {
+            ID: 1,
+            Name: 'Altındağ',
+            CityId: 1
+        },
+        {
+            ID: 2,
+            Name: 'Keçiören',
+            CityId: 1
+        },
+        {
+            ID: 3,
+            Name: 'Şişli',
+            CityId: 2
+        },
+        {
+            ID: 4,
+            Name: 'Sarıyer',
+            CityId: 2
+        },
+        {
+            ID: 5,
+            Name: 'Manhattan',
+            CityId: 3
+        },
+        {
+            ID: 6,
+            Name: 'Brooklyn',
+            CityId: 3
+        },
+        {
+            ID: 7,
+            Name: 'Nora Vargas',
+            CityId: 3
+        }
+    ];
+    const employees = [
+        {
+            ID: 1,
+            Name: 'Oruç Han',
+            CityId: 1,
+            StateId: 1,
+            CountryId: 1
+        },
+        {
+            ID: 2,
+            Name: 'Recep',
+            CityId: 3,
+            StateId: 5,
+            CountryId: 2
+        }
+    ];
+
+    $(document).ready(function () {
+        var model = employees;
+        console.table(model);
+    });
+    $('#gridContainer').dxDataGrid({
+        keyExpr: 'ID',
+        dataSource: employees,
+        showBorders: true,
+        editing: {
+            allowUpdating: true,
+            allowAdding: true,
+            mode: 'row',
+        },
+        onEditorPreparing(e) {
+            // Kontrol yapabilirsin burada örneğin , CityId ile ilgili bir güncelleme yapılıyorken (tıklanınca) diğer verileri boşaltabilir veya seçilmiş CityId ile ilgili Stateleri getirebilsin
+        },
+        columns: [
+            {
+                dataField: 'Name',
+                caption: 'İsim',
+            },
+            {
+                dataField: 'CountryId',
+                caption: 'Ülke',
+                setCellValue(rowData, value) {
+                    rowData.CountryId = value;
+                    rowData.CityId = null;
+                    rowData.StateId = null;
+                },
+                lookup: {
+                    dataSource: countries,
+                    valueExpr: 'ID',
+                    displayExpr: 'Name',
+                },
+            },
+            {
+                dataField: 'CityId',
+                caption: 'Şehir',
+                setCellValue(rowData, value) {
+                    rowData.CityId = value;
+                    rowData.StateId = null;
+
+                },
+                lookup: {
+                    dataSource(options) {
+                        return {
+                            store: cities,
+                            filter: options.data ? ['CountryId', '=', options.data.CountryId] : null,
+                        };
+                    },
+                    valueExpr: 'ID',
+                    displayExpr: 'Name',
+                },
+            },
+            {
+                dataField: 'StateId',
+                caption: 'İlçe',
+
+                lookup: {
+                    dataSource(options) {
+                        return {
+                            store: states,
+                            filter: options.data ? ['CityId', '=', options.data.CityId] : null,
+                        };
+                    },
+                    valueExpr: 'ID',
+                    displayExpr: 'Name',
+
+                },
+            }
+        ],
+    });
+</script>
